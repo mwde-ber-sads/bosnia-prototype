@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Map with Layer Control</title>
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.css" rel="stylesheet">
+  <style>
+    body { margin: 0; padding: 0; height: 100%; }
+    #map { width: 100%; height: 100%; }
+    .mapboxgl-ctrl-attrib { display: none; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoiaWFyb3NsYXYtYm9yZXRza2lpLXpvaXMiLCJhIjoiY204eG1meW45MDRsOTJwc2dnZ2FxZXMzaiJ9.cXtXBiy1C9EpTchSB3KxIA'; // Укажите свой токен Mapbox
+
+    var map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/iaroslav-boretskii-zois/cm8x8b96x000d01r4789w8ffv', // Ссылка на ваш стиль карты, например JSON стиль
+      center: [40.0,30.0], // Установите центр карты
+      zoom: 8
+    });
+
+    // Добавление управления слоями
+    var layerControl = new mapboxgl.NavigationControl();
+    map.addControl(layerControl, 'top-right');
+
+    // Пример добавления слоев
+    map.on('load', function () {
+      map.addLayer({
+        'id': 'waterways',
+        'type': 'line',
+        'source': {
+          'type': 'geojson',
+          'data': 'URL_TO_YOUR_WATERWAY_GEOJSON'
+        },
+        'paint': {
+          'line-color': '#0000FF',
+          'line-width': 2
+        }
+      });
+
+      // Добавление кнопок для включения/выключения слоев
+      var layers = document.createElement('div');
+      layers.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
+
+      var toggleButton = document.createElement('button');
+      toggleButton.innerHTML = 'Toggle Waterways';
+      toggleButton.onclick = function () {
+        var visibility = map.getLayoutProperty('waterways', 'visibility');
+        if (visibility === 'visible') {
+          map.setLayoutProperty('waterways', 'visibility', 'none');
+        } else {
+          map.setLayoutProperty('waterways', 'visibility', 'visible');
+        }
+      };
+
+      layers.appendChild(toggleButton);
+      document.body.appendChild(layers);
+    });
+  </script>
+</body>
+</html>
