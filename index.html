@@ -1,67 +1,128 @@
-<!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Map Layer Control</title>
-  <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.js"></script>
-  <link href="https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.css" rel="stylesheet">
-  <style>
-    body { margin: 0; padding: 0; height: 100%; }
-    
-    .mapboxgl-ctrl-attrib { display: none; }
-  </style>
+<meta charset="utf-8">
+<title>Display a map with a custom style</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.11.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.11.0/mapbox-gl.js"></script>
+<style>
+body { margin: 0; padding: 0; }
+#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+
+
+#menu {
+    background: #FFFFFF;
+    position: absolute;
+    z-index: 1;
+    bottom: 50px;
+    left: 10px;
+    border-radius: 10px;
+    width: 400px;
+    font-family: 'Open Sans', sans-serif;
+    overflow-y: auto;
+    max-height: 50%;
+}
+
+#menu label {
+    font-size: 11px;
+    color: #404040;
+    display: block;
+    margin: 0;
+    padding: 0;
+    padding: 2px;
+    text-decoration: none;
+    text-align: left;
+}
+
+#menu label:last-child {
+    border: none;
+}
+
+#menu label:hover {
+    background-color: #c9c7c7;
+    color: #000000;
+}
+
+#menu label.active {
+    background-color: #ffffff;
+    color: #040303;
+}
+
+#menu label.active:hover {
+    background: #000000;
+}
+
+#menu input {
+    margin-right: 10px;
+}
+
+</style>
 </head>
 <body>
-  <iframe width='100%' height='400px' src="https://api.mapbox.com/styles/v1/iaroslav-boretskii-zois/cm8x8b96x000d01r4789w8ffv.html?title=false&access_token=pk.eyJ1IjoiaWFyb3NsYXYtYm9yZXRza2lpLXpvaXMiLCJhIjoiY2xoZzhpMzY5MHpnNTNlbzQ1cGdqbXd2NCJ9.JhdXZ2bLRLDTlAndKmkZng&zoomwheel=false#7.29/44.051/17.942" title="Prototype" style="border:none;"></iframe>
+  
+  <nav id="menu">
+    <p>Legend</p>
+  </nav>
   <div id="map"></div>
-  <script>
-    mapboxgl.accessToken = 'pk.eyJ1IjoiaWFyb3NsYXYtYm9yZXRza2lpLXpvaXMiLCJhIjoiY204eG1meW45MDRsOTJwc2dnZ2FxZXMzaiJ9.cXtXBiy1C9EpTchSB3KxIA'; // Укажите свой токен Mapbox
 
-    var map = new mapboxgl.Map({
-      container: 'map',
-      style: 'mapbox://styles/iaroslav-boretskii-zois/cm8x8b96x000d01r4789w8ffv', // Ссылка на ваш стиль карты, например JSON стиль
-      center: [40.0,30.0], // Установите центр карты
-      zoom: 8
+<script>
+	mapboxgl.accessToken = 'pk.eyJ1IjoiaWFyb3NsYXYtYm9yZXRza2lpLXpvaXMiLCJhIjoiY2xoZzhpMzY5MHpnNTNlbzQ1cGdqbXd2NCJ9.JhdXZ2bLRLDTlAndKmkZng';
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/iaroslav-boretskii-zois/cm8x8b96x000d01r4789w8ffv', 
+        center: [16.76, 43.94], 
+        zoom: 7.10 
     });
 
-    // Добавление управления слоями
-    var layerControl = new mapboxgl.NavigationControl();
-    map.addControl(layerControl, 'top-right');
+    map.on('load', () => {
+        
+        const layers = map.getStyle().layers;
 
-    // Пример добавления слоев
-    map.on('load', function () {
-      map.addLayer({
-        'id': 'waterways',
-        'type': 'line',
-        'source': {
-          'type': 'geojson',
-          'data': 'URL_TO_YOUR_WATERWAY_GEOJSON'
-        },
-        'paint': {
-          'line-color': '#0000FF',
-          'line-width': 2
-        }
-      });
-
-      // Добавление кнопок для включения/выключения слоев
-      var layers = document.createElement('div');
-      layers.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
-
-      var toggleButton = document.createElement('button');
-      toggleButton.innerHTML = 'Toggle Waterways';
-      toggleButton.onclick = function () {
-        var visibility = map.getLayoutProperty('waterways', 'visibility');
-        if (visibility === 'visible') {
-          map.setLayoutProperty('waterways', 'visibility', 'none');
-        } else {
-          map.setLayoutProperty('waterways', 'visibility', 'visible');
-        }
-      };
-
-      layers.appendChild(toggleButton);
-      document.body.appendChild(layers);
+        
+        layers.forEach(function(layer) {
+            if (layer.type !== 'background') { 
+                addLayerToMenu(layer);
+            }
+        });
     });
-  </script>
+
+    function addLayerToMenu(layer) {
+        const menu = document.getElementById('menu');
+
+        
+        const label = document.createElement('label');
+        label.id = layer.id;
+        
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = true; 
+        
+        
+        checkbox.onclick = function() {
+            const clickedLayer = label.textContent;
+
+            
+            const visibility = map.getLayoutProperty(clickedLayer, 'visibility');
+            
+            
+            if (visibility === 'visible') {
+                
+                map.setLayoutProperty(clickedLayer, 'visibility', 'none');
+                checkbox.checked = false; 
+            } else {
+                
+                map.setLayoutProperty(clickedLayer, 'visibility', 'visible');
+                checkbox.checked = true; 
+            }
+        };
+
+        
+        label.textContent = layer.id;
+        label.prepend(checkbox); 
+
+        menu.appendChild(label);
+    }
+</script>
 </body>
 </html>
